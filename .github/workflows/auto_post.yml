@@ -1,0 +1,46 @@
+name: Auto Post Reels to Instagram (US Target)
+
+on:
+  schedule:
+    # النشر الأول: مع الـ 4:00 لعشية بتوقيت نيويورك (20:00 UTC)
+    - cron: '0 20 * * *'
+    # النشر الثاني: مع الـ 9:00 د الليل بتوقيت نيويورك (01:00 UTC)
+    - cron: '0 1 * * *'
+  workflow_dispatch: # هاد السطر كيخليك تقدر تجرب البوت يدوياً ف أي وقت
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
+
+    - name: Install Python Dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run AI Agent Script
+      env:
+        IG_USERNAME: ${{ secrets.IG_USERNAME }}
+        IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
+      run: |
+        python auto_poster.py
+
+    - name: Commit Archive Changes
+      run: |
+        git config --global user.name "GitHub Action Bot"
+        git config --global user.email "actions@github.com"
+        git add archive.txt || true
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Automated: Update download archive" && git push)
+        
