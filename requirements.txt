@@ -1,3 +1,6 @@
 yt-dlp
 instagrapi
 facefusion
+deep-translator
+
+
